@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sopa de Letras</title>
+    <link rel="stylesheet" type="text/css" href="juego.css">
+</head>
+<body>
+    <h1>Proyecto #2 de Lenguajes de programacion</h1>
+    <h1>Lenguaje Funcional</h1>
+    <h1>Randald Villegas</h1>
+    <div id="main" role="main">
+        <div id="puzzle"></div>
+        <ul id="words">
+            <li><button id="add-word">Agregar Palabra</button></li>
+        </ul>
+        <fieldset id="controls">
+            <label for="allowed-missing-words">Palabras faltantes permitidas:
+                <input id="allowed-missing-words" type="number" min="0" max="5" step="1" value="2">
+            </label>
+        
+            <label for="extra-letters">Letras extra:
+                <select id="extra-letters">
+                    <option value="random">Random</option>
+                </select>
+            </label>
+            
+            <button id="create-grid">Generar Matrix</button>
+            <p id="result-message"></p>
+            <button id="solve">Resolver?</button>
+        </fieldset>
+    </div>
+
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script> 
+    <script type="text/javascript" src="sopa.js"></script> 
+    <script type="text/javascript" src="juego.js"></script> 
+    <script>
+    /* Lista de palabras */
+    [
+ 
+        'CARTA',
+        'PAPA',
+        'BAÑO',
+        'LOTE',
+        'CASA',
+        'HOLA',
+        'MONO',
+        'SOPA',
+    ].map(word => Juego.insertWordBefore($('#add-word').parent(), word));
+    $('#secret-word').val('LAETITIA');
+
+    /* Init */
+    function recreate() {
+        $('#result-message').removeClass();
+        var fillBlanks, game;
+        if ($('#extra-letters').val() === 'none') {
+            fillBlanks = false;
+        } else if ($('#extra-letters').val().startsWith('secret-word')) {
+            fillBlanks = $('#secret-word').val();
+        }
+        try {
+            game = new Juego('#puzzle', {
+                allowedMissingWords: +$('#allowed-missing-words').val(),
+                maxGridGrowth: +$('#max-grid-growth').val(),
+                fillBlanks: fillBlanks,
+                allowExtraBlanks: ['none', 'secret-word-plus-blanks'].includes($('#extra-letters').val()),
+                maxAttempts: 100,
+            });
+        } catch (error) {
+            $('#result-message').text(`😞 ${error}, try to specify less ones`).css({color: 'red'});
+            return;
+        }
+        wordfind.print(game);
+        if (window.game) {
+            var emptySquaresCount = Juego.emptySquaresCount();
+            $('#result-message').text(`😃 ${emptySquaresCount ? 'but there are empty squares' : ''}`).css({color: ''});
+        }
+        window.game = game;
+    }
+    recreate();
+
+    /* Event listeners */
+    $('#extra-letters').change((evt) => $('#secret-word').prop('disabled', !evt.target.value.startsWith('secret-word')));
+
+    $('#add-word').click( () => Juego.insertWordBefore($('#add-word').parent()));
+
+    $('#create-grid').click(recreate);
+
+    $('#solve').click(() => game.solve());
+    </script>
+</body>
+</html>
